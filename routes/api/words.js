@@ -114,10 +114,21 @@ router.put("/:id", auth, upload.single('image'), async (req, res) => {
         if (req.params.id) {
             const wordData = await Word.findOne({_id: req.params.id});
             if (wordData && wordData._id) {
+                if (req.file && req.file.filename) {
+                    await fs.unlink(path.join(__dirname, "./../../public/" + wordData.image), (err) => {
+                        if(err) return console.log(err);
+                        req.body.image = req.file.filename;
+                    });
+                }
                 const data = await Word.updateOne({_id: req.params.id}, req.body);
                 const updatedData = await Word.findOne({_id: req.params.id});
                 res.json(updatedData);
             } else {
+                if (req.file && req.file.filename) {
+                    await fs.unlink(path.join(__dirname, "./../../public/" + req.file.filename), (err) => {
+                        if (err) return console.log(err);
+                    });
+                }
                 return res.status(400).json({invalidId: "Invalid ID"});
             }
         } else {
